@@ -5,9 +5,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type React from "react";
-import { ChevronDownIcon, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ChevronDownIcon } from "lucide-react";
+import type React from "react";
+import LoadingSpinner from "./loadingSpinner";
 interface Props {
   columns: { name: string; sortable?: boolean }[];
   currentSort?: string | null;
@@ -42,11 +43,7 @@ export default function TableComponent(props: Props) {
   }
   return (
     <div className={`flex flex-col ${maxHeight}`}>
-      {loading && (
-        <div className="flex justify-center items-center h-[calc(100vh-6rem)] w-full ">
-          <Loader2 className="w-4 h-4 animate-spin" />
-        </div>
-      )}
+      {loading && <LoadingSpinner />}
       {itemsCount === 0 && !loading && (
         <div className="flex justify-center items-center h-[calc(100vh-6rem)] w-full ">
           No Results

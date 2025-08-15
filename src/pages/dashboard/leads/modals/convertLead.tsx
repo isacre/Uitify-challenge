@@ -1,9 +1,12 @@
 import Inputs from "@/components/inputs";
 import ModalComponent from "@/components/modalComponent";
 import { useAppSelector } from "@/redux/hooks";
+import { setLeadsData } from "@/redux/leads";
+import { addOpportunity } from "@/redux/opportunities";
 import type { OpportunityStage, OpportunityType } from "@/types";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useDispatch } from "react-redux";
 
 type OpportunityFormType = Omit<OpportunityType, "id">;
 
@@ -13,10 +16,15 @@ export default function ConvertLeadModal(props: {
   setModal: (modal: "edit" | "convert" | null) => void;
   modal: "edit" | "convert" | null;
 }) {
+  const dispatch = useDispatch();
   const { selectedLead, setSelectedLead, setModal, modal } = props;
+  const [simulateError, setSimulateError] = useState(false);
   const leadsList = useAppSelector((state) => state.leads.data);
+  const opportunitiesData = useAppSelector((state) => state.opportunities.data);
+  const data = useAppSelector((state) => state.leads.data);
   const leadIndex = leadsList.findIndex((lead) => lead.id === selectedLead);
   const lead = leadsList[leadIndex];
+  const [loading, setLoading] = useState(false);
   const { register, handleSubmit, reset } = useForm({
     defaultValues: {
       amount: undefined,
@@ -26,8 +34,61 @@ export default function ConvertLeadModal(props: {
     },
   });
 
+  function simulatedLeadConversionRequest(
+    leadId: number,
+    opportunity: OpportunityFormType,
+    simulateError: boolean
+  ) {
+    const p = new Promise((resolve, reject) => {
+      if (simulateError) {
+        reject(new Error("Simulated error"));
+      }
+      Object.keys(opportunity).forEach((key) => {
+        if (
+          opportunity[key as keyof OpportunityFormType] === "" &&
+          key !== "amount"
+        ) {
+          reject(new Error(`${key} is required`));
+        }
+      });
+      const leadIndex = data.findIndex((lead) => lead.id === leadId);
+      if (leadIndex === -1) {
+        reject(new Error("Lead not found"));
+      } else {
+        dispatch(addOpportunity({ ...opportunity, id: leadId }));
+        dispatch(setLeadsData(data.filter((lead) => lead.id !== leadId)));
+        localStorage.setItem(
+          "leads",
+          JSON.stringify(data.filter((lead) => lead.id !== leadId))
+        );
+        localStorage.setItem(
+          "opportunities",
+          JSON.stringify(
+            opportunitiesData.filter((opportunity) => opportunity.id !== leadId)
+          )
+        );
+        setTimeout(() => {
+          resolve(true);
+        }, 2000);
+      }
+    });
+    return p;
+  }
+
   function onSubmit(data: OpportunityFormType) {
-    console.log(data);
+    setLoading(true);
+    simulatedLeadConversionRequest(lead?.id, data, simulateError)
+      .then(() => {
+        window.alert("Lead converted successfully");
+        setSelectedLead(null);
+        setModal(null);
+      })
+      .catch((err) => {
+        window.alert(err.message);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }
 
   useEffect(() => {
@@ -52,6 +113,7 @@ export default function ConvertLeadModal(props: {
         }
       }}
       formId="convert_lead_form"
+      loading={loading}
     >
       <form
         id="convert_lead_form"
@@ -91,6 +153,11 @@ export default function ConvertLeadModal(props: {
             {...register("amount")}
           />
         </div>
+        <Inputs.CheckboxWithLabel
+          checked={simulateError}
+          setChecked={setSimulateError}
+          label="Simulate error"
+        />
       </form>
     </ModalComponent>
   );

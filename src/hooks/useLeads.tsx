@@ -1,10 +1,10 @@
 import jsonData from "@/data/leads.json";
 import useDebounce from "@/hooks/useDebounce";
-import { useCallback, useEffect, useState } from "react";
-import type { LeadStatus, LeadType } from "@/types/index";
 import { useAppSelector } from "@/redux/hooks";
-import { useDispatch } from "react-redux";
 import { setLeadList, setLeadsData } from "@/redux/leads";
+import type { LeadStatus, LeadType } from "@/types/index";
+import { useCallback, useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
 
 export default function useLeads(
   search: string,
