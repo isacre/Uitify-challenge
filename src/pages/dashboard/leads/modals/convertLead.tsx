@@ -20,7 +20,7 @@ export default function ConvertLeadModal(props: {
   const { selectedLead, setSelectedLead, setModal, modal } = props;
   const [simulateError, setSimulateError] = useState(false);
   const leadsList = useAppSelector((state) => state.leads.data);
-  const opportunitiesData = useAppSelector((state) => state.opportunities.data);
+  const opportunitiesData = useAppSelector((state) => state.opportunities);
   const data = useAppSelector((state) => state.leads.data);
   const leadIndex = leadsList.findIndex((lead) => lead.id === selectedLead);
   const lead = leadsList[leadIndex];
@@ -42,42 +42,47 @@ export default function ConvertLeadModal(props: {
     const p = new Promise((resolve, reject) => {
       if (simulateError) {
         reject(new Error("Simulated error"));
+        return;
       }
+      const leadIndex = data.findIndex((lead) => lead.id === leadId);
+      if (leadIndex === -1) {
+        reject(new Error("Lead not found"));
+        return;
+      }
+
       Object.keys(opportunity).forEach((key) => {
         if (
           opportunity[key as keyof OpportunityFormType] === "" &&
           key !== "amount"
         ) {
           reject(new Error(`${key} is required`));
+          return;
         }
       });
-      const leadIndex = data.findIndex((lead) => lead.id === leadId);
-      if (leadIndex === -1) {
-        reject(new Error("Lead not found"));
-      } else {
-        dispatch(addOpportunity({ ...opportunity, id: leadId }));
-        dispatch(setLeadsData(data.filter((lead) => lead.id !== leadId)));
-        localStorage.setItem(
-          "leads",
-          JSON.stringify(data.filter((lead) => lead.id !== leadId))
-        );
-        localStorage.setItem(
-          "opportunities",
-          JSON.stringify(
-            opportunitiesData.filter((opportunity) => opportunity.id !== leadId)
-          )
-        );
-        setTimeout(() => {
-          resolve(true);
-        }, 2000);
-      }
+      dispatch(addOpportunity({ ...opportunity, id: leadId }));
+      dispatch(setLeadsData(data.filter((lead) => lead.id !== leadId)));
+      localStorage.setItem(
+        "leads",
+        JSON.stringify(data.filter((lead) => lead.id !== leadId))
+      );
+      localStorage.setItem(
+        "opportunities",
+        JSON.stringify([
+          { ...opportunity, id: leadId },
+          ...opportunitiesData.data,
+        ])
+      );
+
+      setTimeout(() => {
+        resolve(true);
+      }, 2000);
     });
     return p;
   }
 
   function onSubmit(data: OpportunityFormType) {
     setLoading(true);
-    simulatedLeadConversionRequest(lead?.id, data, simulateError)
+    simulatedLeadConversionRequest(selectedLead as number, data, simulateError)
       .then(() => {
         window.alert("Lead converted successfully");
         setSelectedLead(null);

@@ -22,7 +22,7 @@ export const opportunitiesSlice = createSlice({
       state.list = action.payload;
     },
     addOpportunity: (state, action: PayloadAction<OpportunityType>) => {
-      state.data.push(action.payload);
+      state.data = [action.payload, ...state.data];
     },
   },
 });

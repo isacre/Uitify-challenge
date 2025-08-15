@@ -18,11 +18,15 @@ export default function useOpportunities(
   useDebounce(() => handleFiltering(search, status), 500, [search]);
 
   function saveFiltersLocally(search: string, status: OpportunityStage) {
-    localStorage.setItem("filter", JSON.stringify({ search, status }));
+    localStorage.setItem(
+      "filter-opportunities",
+      JSON.stringify({ search, status })
+    );
   }
 
   const handleFiltering = useCallback(
     function handleFiltering(search: string, status: OpportunityStage) {
+      console.log(search, status);
       saveFiltersLocally(search, status);
       setLoading(true);
       const dataCopy = [...data];
@@ -59,7 +63,6 @@ export default function useOpportunities(
   }, [dispatch]);
 
   useEffect(() => {
-    if (data.length === 0) return;
     handleFiltering(search, status);
     //eslint-disable-next-line
   }, [status, data, handleFiltering]);

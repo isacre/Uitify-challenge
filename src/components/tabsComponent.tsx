@@ -4,6 +4,7 @@ export interface TabItem {
   value: string;
   label: string;
   content: React.ReactNode;
+  onClick?: () => void;
 }
 
 interface CustomTabsProps {
@@ -33,6 +34,7 @@ export default function TabsComponent({
             key={tab.value}
             value={tab.value}
             className={tabTriggerClassName}
+            onClick={tab.onClick}
           >
             {tab.label}
           </TabsTrigger>

@@ -9,7 +9,7 @@ function App() {
     <Provider store={store}>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Dashboard />} />
+          <Route path="/:tab?" element={<Dashboard />} />
         </Routes>
       </BrowserRouter>
     </Provider>
