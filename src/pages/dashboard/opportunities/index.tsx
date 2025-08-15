@@ -2,9 +2,7 @@ import TableComponent from "@/components/tableComponent";
 import useOpportunities from "@/hooks/useOpportunities";
 import type { LeadStatus } from "@/types";
 import { useState } from "react";
-import ConvertLeadModal from "./modals/convertLead";
-import EditLeadModal from "./modals/editLead";
-import Lead from "./opportunity";
+import Opportunity from "./opportunity";
 
 type LeadListFilters = {
   search: string;
@@ -16,9 +14,7 @@ export default function OpportunitiesList() {
   const savedFilters = handleGetSavedFilters();
   const [search, setSearch] = useState(savedFilters.search);
   const [status, setStatus] = useState(savedFilters.status);
-  const [selectedLead, setSelectedLead] = useState<number | null>(null);
   const { opportunities, loading } = useOpportunities(search, status);
-  const [modal, setModal] = useState<"edit" | "convert" | null>(null);
 
   function handleGetSavedFilters(): LeadListFilters {
     let savedFilters: LeadListFilters = {
@@ -54,18 +50,7 @@ export default function OpportunitiesList() {
           <option value="contacted">Contacted</option>
         </select>
       </div>
-      <EditLeadModal
-        selectedLead={selectedLead}
-        setSelectedLead={setSelectedLead}
-        setModal={setModal}
-        modal={modal}
-      />
-      <ConvertLeadModal
-        selectedLead={selectedLead}
-        setSelectedLead={setSelectedLead}
-        setModal={setModal}
-        modal={modal}
-      />
+
       <TableComponent
         loading={loading}
         itemsCount={opportunities.length}
@@ -77,14 +62,7 @@ export default function OpportunitiesList() {
         ]}
       >
         {opportunities.map((opportunity) => {
-          return (
-            <Lead
-              setSelectedLead={setSelectedLead}
-              opportunity={opportunity}
-              key={opportunity.id}
-              setModal={setModal}
-            />
-          );
+          return <Opportunity opportunity={opportunity} key={opportunity.id} />;
         })}
       </TableComponent>
     </div>
