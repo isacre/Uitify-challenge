@@ -15,23 +15,21 @@ export const leadsSlice = createSlice({
   name: "leads",
   initialState,
   reducers: {
-    setLeads: (state, action: PayloadAction<LeadType[]>) => {
+    setLeadsData: (state, action: PayloadAction<LeadType[]>) => {
       state.data = action.payload;
     },
-    updateLead: (state, action: PayloadAction<LeadType>) => {
-      state.data = state.data.map((lead) =>
-        lead.id === action.payload.id ? action.payload : lead
-      );
-    },
-    removeLead: (state, action: PayloadAction<number>) => {
-      state.data = state.data.filter((lead) => lead.id !== action.payload);
-    },
-    updateLeadList: (state, action: PayloadAction<LeadType[]>) => {
+    setLeadList: (state, action: PayloadAction<LeadType[]>) => {
       state.list = action.payload;
+    },
+    updateLeadInData: (state, action: PayloadAction<LeadType>) => {
+      const index = state.data.findIndex(
+        (item) => item.id === action.payload.id
+      );
+      state.data[index] = action.payload;
     },
   },
 });
 
-export const { setLeads, updateLead, removeLead, updateLeadList } =
+export const { setLeadsData, setLeadList, updateLeadInData } =
   leadsSlice.actions;
 export default leadsSlice.reducer;

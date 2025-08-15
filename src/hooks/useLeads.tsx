@@ -26,8 +26,6 @@ export default function useLeads(
       ? JSON.parse(localStorageLeads)
       : (data.leads as LeadType[])
   );
-  console.log("ALI");
-
   useDebounce(() => handleFiltering(search, status), 500, [search]);
 
   function saveFiltersLocally(

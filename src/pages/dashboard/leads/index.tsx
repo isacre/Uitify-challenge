@@ -3,8 +3,8 @@ import useLeads from "@/hooks/useLeads";
 import type { LeadStatus } from "@/types";
 import { useState } from "react";
 import Lead from "./lead";
-import ConvertLeadModal from "./modals/convertLead";
-import EditLeadModal from "./modals/editLead";
+/* import ConvertLeadModal from "./modals/convertLead";
+import EditLeadModal from "./modals/editLead"; */
 
 type LeadListFilters = {
   search: string;
@@ -54,7 +54,7 @@ export default function LeadsList() {
           <option value="contacted">Contacted</option>
         </select>
       </div>
-      <EditLeadModal
+      {/*     <EditLeadModal
         selectedLead={selectedLead}
         setSelectedLead={setSelectedLead}
         setModal={setModal}
@@ -65,7 +65,7 @@ export default function LeadsList() {
         setSelectedLead={setSelectedLead}
         setModal={setModal}
         modal={modal}
-      />
+      /> */}
       <TableComponent
         loading={loading}
         itemsCount={leads.length}
