@@ -1,9 +1,11 @@
 import Inputs from "@/components/inputs";
 import ModalComponent from "@/components/modalComponent";
-import { useLeadsCore } from "@/hooks/useLeads";
+import { useAppSelector } from "@/redux/hooks";
+import { setLeadsData } from "@/redux/leads";
 import type { LeadType } from "@/types";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { useDispatch } from "react-redux";
 
 type LeadFormType = Omit<LeadType, "id">;
 
@@ -14,8 +16,10 @@ export default function EditLeadModal(props: {
   modal: "edit" | "convert" | null;
 }) {
   const { selectedLead, setSelectedLead, setModal, modal } = props;
-  const { getLeadById, leads } = useLeadsCore();
-  const lead = getLeadById(selectedLead);
+  const dispatch = useDispatch();
+  const leadsList = useAppSelector((state) => state.leads.data);
+  const leadIndex = leadsList.findIndex((lead) => lead.id === selectedLead);
+  const lead = leadsList[leadIndex];
   const { register, handleSubmit, reset } = useForm({
     defaultValues: {
       name: lead?.name || "",
@@ -36,15 +40,13 @@ export default function EditLeadModal(props: {
     if (!emailRegex.test(data.email)) {
       return window.alert("Invalid email");
     }
-    const leadIndex = leads.findIndex(
-      (lead: LeadType) => lead.id === selectedLead
-    );
     if (leadIndex === -1) {
       return window.alert("Lead not found");
     }
-    const LeadsCopy = JSON.parse(JSON.stringify(leads));
-    LeadsCopy[leadIndex] = { ...data, id: selectedLead };
-    localStorage.setItem("leads", JSON.stringify(LeadsCopy));
+    const leadsCopy = JSON.parse(JSON.stringify(leadsList));
+    leadsCopy[leadIndex] = { ...data, id: selectedLead };
+    localStorage.setItem("leads", JSON.stringify(leadsCopy));
+    dispatch(setLeadsData(leadsCopy));
     setModal(null);
   }
 

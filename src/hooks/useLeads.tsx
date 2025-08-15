@@ -1,31 +1,19 @@
-import data from "@/data/leads.json";
+import jsonData from "@/data/leads.json";
 import useDebounce from "@/hooks/useDebounce";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { LeadStatus, LeadType } from "@/types/index";
-
-export function useLeadsCore() {
-  const leads = data.leads as LeadType[];
-
-  function getLeadById(id: number | null): LeadType | undefined {
-    if (!id) return undefined;
-    return leads.find((lead: LeadType) => lead.id === id);
-  }
-
-  return { getLeadById, leads };
-}
+import { useAppSelector } from "@/redux/hooks";
+import { useDispatch } from "react-redux";
+import { setLeadList, setLeadsData } from "@/redux/leads";
 
 export default function useLeads(
   search: string,
   status: LeadStatus,
   currentSort: string | null
 ) {
-  const localStorageLeads = localStorage.getItem("leads");
   const [loading, setLoading] = useState(false);
-  const [leads, setLeads] = useState<LeadType[]>(
-    localStorageLeads
-      ? JSON.parse(localStorageLeads)
-      : (data.leads as LeadType[])
-  );
+  const { data, list } = useAppSelector((state) => state.leads);
+  const dispatch = useDispatch();
   useDebounce(() => handleFiltering(search, status), 500, [search]);
 
   function saveFiltersLocally(
@@ -50,37 +38,48 @@ export default function useLeads(
     return leads;
   }
 
-  function handleFiltering(search: string, status: LeadStatus) {
-    saveFiltersLocally(search, status, currentSort);
-    setLoading(true);
-    let filtered = leads.filter(
-      (lead) =>
-        lead.name.toLowerCase().includes(search.toLowerCase()) ||
-        lead.company.toLowerCase().includes(search.toLowerCase())
-    );
+  const handleFiltering = useCallback(
+    function handleFiltering(search: string, status: LeadStatus) {
+      saveFiltersLocally(search, status, currentSort);
+      setLoading(true);
+      const dataCopy = [...data];
+      let filtered = dataCopy.filter(
+        (lead) =>
+          lead.name.toLowerCase().includes(search.toLowerCase().trim()) ||
+          lead.company.toLowerCase().includes(search.toLowerCase().trim())
+      );
 
-    if (status !== "all") {
-      filtered = filtered.filter((lead) => lead.status === status);
+      if (status !== "all") {
+        filtered = filtered.filter((lead) => lead.status === status);
+      }
+
+      if (currentSort) {
+        filtered = handleSortingByScore(currentSort, filtered as LeadType[]);
+      }
+
+      setTimeout(() => {
+        dispatch(setLeadList(filtered as LeadType[]));
+        setLoading(false);
+      }, 1000);
+    },
+    [data, dispatch, currentSort]
+  );
+
+  // Initialize leads from localStorage or data.json
+  useEffect(() => {
+    const localStorageLeads = localStorage.getItem("leads");
+    if (localStorageLeads) {
+      dispatch(setLeadsData(JSON.parse(localStorageLeads)));
+    } else {
+      dispatch(setLeadsData(jsonData.leads as LeadType[]));
     }
-
-    if (currentSort) {
-      filtered = handleSortingByScore(currentSort, filtered as LeadType[]);
-    }
-
-    setTimeout(() => {
-      setLeads(filtered as LeadType[]);
-      setLoading(false);
-    }, 1000);
-  }
+  }, [dispatch]);
 
   useEffect(() => {
-    if (status === "all" && !currentSort) {
-      return;
-    }
+    if (data.length === 0) return;
     handleFiltering(search, status);
-
     //eslint-disable-next-line
-  }, [status, currentSort]);
+  }, [status, currentSort, data, handleFiltering]);
 
-  return { leads, setLeads, loading };
+  return { list, loading };
 }

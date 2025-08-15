@@ -3,27 +3,27 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 interface OpportunitiesState {
   data: OpportunityType[];
+  list: OpportunityType[];
 }
 
 const initialState: OpportunitiesState = {
   data: [],
+  list: [],
 };
 
 export const opportunitiesSlice = createSlice({
   name: "opportunities",
   initialState,
   reducers: {
-    setOpportunities: (state, action: PayloadAction<OpportunityType[]>) => {
+    setOpportunitiesData: (state, action: PayloadAction<OpportunityType[]>) => {
       state.data = action.payload;
     },
-    updateOpportunity: (state, action: PayloadAction<OpportunityType>) => {
-      state.data = state.data.map((opportunity) =>
-        opportunity.id === action.payload.id ? action.payload : opportunity
-      );
+    setOpportunitiesList: (state, action: PayloadAction<OpportunityType[]>) => {
+      state.list = action.payload;
     },
   },
 });
 
-export const { setOpportunities, updateOpportunity } =
+export const { setOpportunitiesData, setOpportunitiesList } =
   opportunitiesSlice.actions;
 export default opportunitiesSlice.reducer;

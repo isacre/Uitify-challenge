@@ -1,36 +1,68 @@
 import useDebounce from "@/hooks/useDebounce";
-import { useState } from "react";
-import type { LeadStatus, OpportunityType } from "@/types/index";
+import { useAppSelector } from "@/redux/hooks";
+import {
+  setOpportunitiesData,
+  setOpportunitiesList,
+} from "@/redux/opportunities";
+import type { OpportunityStage, OpportunityType } from "@/types/index";
+import { useCallback, useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
 
-export default function useOpportunities(search: string, status: LeadStatus) {
-  const localStorageOpportunities = localStorage.getItem("opportunities");
+export default function useOpportunities(
+  search: string,
+  status: OpportunityStage
+) {
   const [loading, setLoading] = useState(false);
-  const [opportunities, setOpportunities] = useState<OpportunityType[]>(
-    localStorageOpportunities ? JSON.parse(localStorageOpportunities) : []
-  );
+  const { data, list } = useAppSelector((state) => state.opportunities);
+  const dispatch = useDispatch();
   useDebounce(() => handleFiltering(search, status), 500, [search]);
 
-  function saveFiltersLocally(search: string, status: LeadStatus) {
-    localStorage.setItem(
-      "filter-opportunities",
-      JSON.stringify({ search, status })
-    );
+  function saveFiltersLocally(search: string, status: OpportunityStage) {
+    localStorage.setItem("filter", JSON.stringify({ search, status }));
   }
 
-  function handleFiltering(search: string, status: LeadStatus) {
-    saveFiltersLocally(search, status);
-    setLoading(true);
-    const filtered = opportunities.filter(
-      (opportunity: OpportunityType) =>
-        opportunity.name.toLowerCase().includes(search.toLowerCase()) ||
-        opportunity.accountName.toLowerCase().includes(search.toLowerCase())
-    );
+  const handleFiltering = useCallback(
+    function handleFiltering(search: string, status: OpportunityStage) {
+      saveFiltersLocally(search, status);
+      setLoading(true);
+      const dataCopy = [...data];
+      let filtered = dataCopy.filter(
+        (opportunity) =>
+          opportunity.name
+            .toLowerCase()
+            .includes(search.toLowerCase().trim()) ||
+          opportunity.accountName
+            .toLowerCase()
+            .includes(search.toLowerCase().trim())
+      );
 
-    setTimeout(() => {
-      setOpportunities(filtered as OpportunityType[]);
-      setLoading(false);
-    }, 1000);
-  }
+      if (status !== "all") {
+        filtered = filtered.filter(
+          (opportunity) => opportunity.stage === status
+        );
+      }
 
-  return { opportunities, setOpportunities, loading };
+      setTimeout(() => {
+        dispatch(setOpportunitiesList(filtered as OpportunityType[]));
+        setLoading(false);
+      }, 1000);
+    },
+    [data, dispatch]
+  );
+
+  // Initialize leads from localStorage or data.json
+  useEffect(() => {
+    const localStorageOpportunities = localStorage.getItem("opportunities");
+    if (localStorageOpportunities) {
+      dispatch(setOpportunitiesData(JSON.parse(localStorageOpportunities)));
+    }
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (data.length === 0) return;
+    handleFiltering(search, status);
+    //eslint-disable-next-line
+  }, [status, data, handleFiltering]);
+
+  return { list, loading };
 }

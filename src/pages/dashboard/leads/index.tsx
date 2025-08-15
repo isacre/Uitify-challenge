@@ -3,8 +3,9 @@ import useLeads from "@/hooks/useLeads";
 import type { LeadStatus } from "@/types";
 import { useState } from "react";
 import Lead from "./lead";
-/* import ConvertLeadModal from "./modals/convertLead";
-import EditLeadModal from "./modals/editLead"; */
+import EditLeadModal from "./modals/editLead";
+import ConvertLeadModal from "./modals/convertLead";
+import Filters from "./filters";
 
 type LeadListFilters = {
   search: string;
@@ -20,7 +21,7 @@ export default function LeadsList() {
   const [currentSort, setCurrentSort] = useState<string | null>(
     savedFilters.currentSort
   );
-  const { leads, loading } = useLeads(search, status, currentSort);
+  const { list, loading } = useLeads(search, status, currentSort);
   const [modal, setModal] = useState<"edit" | "convert" | null>(null);
   function handleGetSavedFilters(): LeadListFilters {
     let savedFilters: LeadListFilters = {
@@ -36,25 +37,13 @@ export default function LeadsList() {
 
   return (
     <div className="flex flex-col gap-4 p-4 h-[calc(100vh-10rem)]">
-      <div className="flex gap-1 w-full">
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="border border-gray-300 rounded-md p-2 w-full"
-          placeholder="Search for a lead by name or company"
-        />
-        <select
-          value={status}
-          onChange={(e) => setStatus(e.target.value as LeadStatus)}
-          className="border border-gray-300 rounded-md p-2 bg-black"
-        >
-          <option value="all">All</option>
-          <option value="new">New</option>
-          <option value="qualified">Qualified</option>
-          <option value="contacted">Contacted</option>
-        </select>
-      </div>
-      {/*     <EditLeadModal
+      <Filters
+        search={search}
+        setSearch={setSearch}
+        status={status}
+        setStatus={setStatus}
+      />
+      <EditLeadModal
         selectedLead={selectedLead}
         setSelectedLead={setSelectedLead}
         setModal={setModal}
@@ -65,10 +54,10 @@ export default function LeadsList() {
         setSelectedLead={setSelectedLead}
         setModal={setModal}
         modal={modal}
-      /> */}
+      />
       <TableComponent
         loading={loading}
-        itemsCount={leads.length}
+        itemsCount={list.length}
         columns={[
           { name: "Name" },
           { name: "Company" },
@@ -81,7 +70,7 @@ export default function LeadsList() {
         currentSort={currentSort}
         setCurrentSort={setCurrentSort}
       >
-        {leads.map((lead) => {
+        {list.map((lead) => {
           return (
             <Lead
               setSelectedLead={setSelectedLead}

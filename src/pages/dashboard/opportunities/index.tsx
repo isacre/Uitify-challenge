@@ -1,12 +1,13 @@
 import TableComponent from "@/components/tableComponent";
 import useOpportunities from "@/hooks/useOpportunities";
-import type { LeadStatus } from "@/types";
+import type { OpportunityStage } from "@/types";
 import { useState } from "react";
 import Opportunity from "./opportunity";
+import Filters from "./filters";
 
-type LeadListFilters = {
+type OpportunitiesListFilters = {
   search: string;
-  status: LeadStatus;
+  status: OpportunityStage;
   currentSort: string | null;
 };
 
@@ -14,10 +15,10 @@ export default function OpportunitiesList() {
   const savedFilters = handleGetSavedFilters();
   const [search, setSearch] = useState(savedFilters.search);
   const [status, setStatus] = useState(savedFilters.status);
-  const { opportunities, loading } = useOpportunities(search, status);
+  const { list, loading } = useOpportunities(search, status);
 
-  function handleGetSavedFilters(): LeadListFilters {
-    let savedFilters: LeadListFilters = {
+  function handleGetSavedFilters(): OpportunitiesListFilters {
+    let savedFilters: OpportunitiesListFilters = {
       search: "",
       status: "all",
       currentSort: null,
@@ -32,28 +33,15 @@ export default function OpportunitiesList() {
 
   return (
     <div className="flex flex-col gap-4 p-4 ">
-      <div className="flex gap-1 w-full">
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="border border-gray-300 rounded-md p-2 w-full"
-          placeholder="Search for an opportunity by name or company"
-        />
-        <select
-          value={status}
-          onChange={(e) => setStatus(e.target.value as LeadStatus)}
-          className="border border-gray-300 rounded-md p-2 bg-black"
-        >
-          <option value="all">All</option>
-          <option value="new">New</option>
-          <option value="qualified">Qualified</option>
-          <option value="contacted">Contacted</option>
-        </select>
-      </div>
-
+      <Filters
+        search={search}
+        setSearch={setSearch}
+        status={status}
+        setStatus={setStatus}
+      />
       <TableComponent
         loading={loading}
-        itemsCount={opportunities.length}
+        itemsCount={list.length}
         columns={[
           { name: "Name" },
           { name: "Company" },
@@ -61,7 +49,7 @@ export default function OpportunitiesList() {
           { name: "Stage" },
         ]}
       >
-        {opportunities.map((opportunity) => {
+        {list.map((opportunity) => {
           return <Opportunity opportunity={opportunity} key={opportunity.id} />;
         })}
       </TableComponent>

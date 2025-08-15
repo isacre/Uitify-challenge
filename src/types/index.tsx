@@ -1,6 +1,11 @@
-export type LeadStatus = "new" | "contacted" | "qualified" | "all";
+export type LeadStatus = "new" | "contacted" | "qualified" | "closed" | "all";
 export type LeadSource = "LinkedIn" | "Website" | "Referral" | "Trade Show";
-export type OpportunityStage = "prospect" | "negotiation" | "won" | "lost";
+export type OpportunityStage =
+  | "prospect"
+  | "negotiation"
+  | "won"
+  | "lost"
+  | "all";
 export type LeadType = {
   id: number;
   name: string;

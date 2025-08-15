@@ -1,6 +1,6 @@
 import Inputs from "@/components/inputs";
 import ModalComponent from "@/components/modalComponent";
-import { useLeadsCore } from "@/hooks/useLeads";
+import { useAppSelector } from "@/redux/hooks";
 import type { OpportunityStage, OpportunityType } from "@/types";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
@@ -14,8 +14,9 @@ export default function ConvertLeadModal(props: {
   modal: "edit" | "convert" | null;
 }) {
   const { selectedLead, setSelectedLead, setModal, modal } = props;
-  const { getLeadById } = useLeadsCore();
-  const lead = getLeadById(selectedLead);
+  const leadsList = useAppSelector((state) => state.leads.data);
+  const leadIndex = leadsList.findIndex((lead) => lead.id === selectedLead);
+  const lead = leadsList[leadIndex];
   const { register, handleSubmit, reset } = useForm({
     defaultValues: {
       amount: undefined,
