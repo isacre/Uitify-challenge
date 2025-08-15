@@ -14,7 +14,7 @@ export default function EditLeadModal(props: {
   modal: "edit" | "convert" | null;
 }) {
   const { selectedLead, setSelectedLead, setModal, modal } = props;
-  const { getLeadById } = useLeadsCore();
+  const { getLeadById, leads } = useLeadsCore();
   const lead = getLeadById(selectedLead);
   const { register, handleSubmit, reset } = useForm({
     defaultValues: {
@@ -28,7 +28,24 @@ export default function EditLeadModal(props: {
   });
 
   function onSubmit(data: LeadFormType) {
-    console.log(data);
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+    if (!data.email) {
+      return window.alert("Email is required");
+    }
+    if (!emailRegex.test(data.email)) {
+      return window.alert("Invalid email");
+    }
+    const leadIndex = leads.findIndex(
+      (lead: LeadType) => lead.id === selectedLead
+    );
+    if (leadIndex === -1) {
+      return window.alert("Lead not found");
+    }
+    const LeadsCopy = JSON.parse(JSON.stringify(leads));
+    LeadsCopy[leadIndex] = { ...data, id: selectedLead };
+    localStorage.setItem("leads", JSON.stringify(LeadsCopy));
+    setModal(null);
   }
 
   useEffect(() => {

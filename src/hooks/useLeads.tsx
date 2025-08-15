@@ -8,10 +8,10 @@ export function useLeadsCore() {
 
   function getLeadById(id: number | null): LeadType | undefined {
     if (!id) return undefined;
-    return leads.find((lead) => lead.id === id);
+    return leads.find((lead: LeadType) => lead.id === id);
   }
 
-  return { getLeadById };
+  return { getLeadById, leads };
 }
 
 export default function useLeads(
@@ -26,6 +26,8 @@ export default function useLeads(
       ? JSON.parse(localStorageLeads)
       : (data.leads as LeadType[])
   );
+  console.log("ALI");
+
   useDebounce(() => handleFiltering(search, status), 500, [search]);
 
   function saveFiltersLocally(
