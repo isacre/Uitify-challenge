@@ -26,7 +26,6 @@ export default function useOpportunities(
 
   const handleFiltering = useCallback(
     function handleFiltering(search: string, status: OpportunityStage) {
-      console.log(search, status);
       saveFiltersLocally(search, status);
       setLoading(true);
       const dataCopy = [...data];
